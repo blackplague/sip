@@ -105,7 +105,7 @@ function mandatory_exercise()
         
 %         reduceTo = 6;
 %         I_reduced_3 = reduceGray(reduceTo, I);
-        
+%         
 %         figure, imshow(I_reduced_3);
 %         figure, imhist(I_reduced_3, 8)
         
@@ -113,34 +113,53 @@ function mandatory_exercise()
 
 
         % Run reduction sequence
-        R64 = reduceGray(64, I);
-        R32 = reduceGray(32, I);
-        R16 = reduceGray(16, I);
-        R8 = reduceGray(8, I);
-        R4 = reduceGray(4, I);
-        R2 = reduceGray(2, I);
+%         R64 = reduceGray(64, I);
+%         R32 = reduceGray(32, I);
+%         R16 = reduceGray(16, I);
+%         R8 = reduceGray(8, I);
+%         R4 = reduceGray(4, I);
+%         R2 = reduceGray(2, I);
+% 
+%         figure, imhist(R8, 8)
+%         imwrite(R8, './images/r08.png', 'png')
+%         figure, imhist(R4, 8)
+%         imwrite(R4, './images/r04.png', 'png')
+%         figure, imhist(R2, 8)
+%         imwrite(R2, './images/r02.png', 'png')
+%         
+%         figure
+%         hold on        
+%         subplot(2,3,1)
+%         imshow(R64)
+%         subplot(2,3,2)
+%         imshow(R32)
+%         subplot(2,3,3)
+%         imshow(R16)
+%         subplot(2,3,4)
+%         imshow(R8)
+%         subplot(2,3,5)
+%         imshow(R4)
+%         subplot(2,3,6)
+%         imshow(R2)
+%         hold off
+        
+%          resolutionFactor = 3;
+         rf4 = changeResolution(4, I);
+         imwrite(rf4, './images/rf04.png', 'png')
+         figure, imhist(rf4);
+         
+         rf8 = changeResolution(8, I);
+         imwrite(rf8, './images/rf08.png', 'png')
+         figure, imhist(rf8);
 
-        figure
-        hold on        
-        subplot(2,3,1)
-        imshow(R64)
-        subplot(2,3,2)
-        imshow(R32)
-        subplot(2,3,3)
-        imshow(R16)
-        subplot(2,3,4)
-        imshow(R8)
-        subplot(2,3,5)
-        imshow(R4)
-        subplot(2,3,6)
-        imshow(R2)
-        hold off
+         rf16 = changeResolution(16, I);
+         imwrite(rf16, './images/rf16.png', 'png')
+         figure, imhist(rf16);
         
-%         resolutionFactor = 3;
-%         I_resolutionChange_1 = changeResolution(resolutionFactor, I);
-        
-%         figure, imshow(I_resolutionChange_1);
-%         figure, imhist(I_resolutionChange_1);
+         
+         
+         %         figure, imshow(I_resolutionChange_1);
+
         
 %         imwrite(I_resolutionChange_1, './images/img09.png', 'png')
         
