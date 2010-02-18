@@ -8,26 +8,32 @@ function [ output_args ] = mandatory_exercise2( input_args )
         
         image2 = imread('./images/noisy2.tiff');
         
-        ft_image1 = fft2(image1);
+%         ft_image1 = fft2(image1);
         
 %         tft_image1 = log(abs(fftshift(ft_image1)) + 1);
         
 %         imwrite(tft_image1, '../report/images/ft_image1.png', 'png');
         
+        figure(1), imshow(image2)
+
         ft_image2 = fft2(image2);
 
-%         tft_image2 = log(abs(fftshift(ft_image2)) + 1);
+%         figure(2), imshow(ft_image2)
+        
+        tft_image2 = log(abs(fftshift(ft_image2)) + 1);
+
+        figure(3), imshow(tft_image2, [])
         
 %         imwrite(tft_image2, '../report/images/ft_image2.png', 'png');
         
 %         figure,
 %         hold on
 %         subplot(221)
-        figure, imshow(image1)
+%         figure, imshow(image1)
 %         subplot(222)
 %         figure, imshow(log(abs(fftshift(ft_image1)) + 1),[])
 %         subplot(223)
-        figure, imshow(image2)
+%         figure, imshow(image2)
 %         subplot(224)
 %         figure, imshow(log(abs(fftshift(ft_image2)) + 1),[])
 %         hold off
@@ -175,8 +181,8 @@ function [ output_args ] = mandatory_exercise2( input_args )
 
     function run( ~ )
        
-        %exercise11()
-        q2_4()
+        exercise11()
+%         q2_4()
     end
 
     run()

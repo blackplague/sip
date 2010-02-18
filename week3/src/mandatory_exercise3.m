@@ -2,197 +2,158 @@ function [ output_args ] = mandatory_exercise3( input_args )
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
-    function exercise31()
+    function exercise31(I, n)
         
-        image1 = imread('./images/square.tiff');
+        figure(1), imshow(I)
         
-        image2 = imread('./images/unix.tiff');
-        
-        si1 = size(image1);
-        new_image1 = zeros(si1);
+        si = size(I);
 
-        ft_image1 = fft2(image1);        
-        tft_image1 = log(abs(fftshift(ft_image1)) + 1);
+        ftI = fftshift(fft2(I));
         
-        for x=1:si1(1)
-            for y = 1:si1(2)
-                new_image1(x,y) = h(tft_image1(x,y));
+        alpha = 0.4;
+        beta = 2;
+        
+        cut_off = 30;
+        
+        %         lowpass_filter = ideal_lowpass(si(1), si(2), cut_off);
+        
+%         nftI = lowpass_filter.*ftI;
+  
+%         figure(2), imshow(lowpass_filter)
+        
+%         figure(3), imshow(log(abs(ifftshift(nftI)) + 1));
+        
+%         figure(4), imshow(ifft2(ifftshift(nftI)),[]);
+
+%         bw_filter = butterworth(si(1), si(2), cut_off, 2);
+        
+%         nftI2 = bw_filter.*ftI;
+        
+%         figure(5), imshow(bw_filter)
+%         figure(6), imshow(ifft2(ifftshift(nftI2)), [])
+        
+        hfe_filter = hfe(si(1), si(2), alpha, beta, cut_off)
+        
+        nftI3 = hfe_filter.*ftI;
+
+        figure(7), imshow(hfe_filter);
+        
+        figure(8), imshow(ifft2(ifftshift(nftI3)),[]);        
+        
+%         imwrite(tft_image2, '../report/images/ft_image2.png', 'png');
+        
+         figure(2), imshow(lowpass_filter)
+         figure(4), imshow(ifft2(ifftshift(nftI)),[]);
+
+
+    end
+
+        function [filter] = ideal_lowpass(x,y, D0)
+            
+            filter = zeros(x,y);
+            
+            for i=1:x
+                for j = 1:y
+                    if ((i-(x/2))^2 + (j-(y/2))^2)^(1/2) < D0
+                        filter(i,j) = 1;
+                    else
+                        filter(i,j) = 0;
+                    end
+                end
             end
         end
-        
-        figure(1), imshow(tft_image1)
-        figure(2), imshow(new_image)
-        
-% 
-%         
-%         %         imwrite(tft_image1, '../report/images/ft_image1.png', 'png');
-%         
-%         ft_image2 = fft2(image2);
-%         
-%         %         tft_image2 = log(abs(fftshift(ft_image2)) + 1);
-%         
-%         %         imwrite(tft_image2, '../report/images/ft_image2.png', 'png');
-%         
-%         %         figure,
-%         %         hold on
-%         %         subplot(221)
-%         figure, imshow(image1)
-%         %         subplot(222)
-%         %         figure, imshow(log(abs(fftshift(ft_image1)) + 1),[])
-%         %         subplot(223)
-%         figure, imshow(image2)
-%         %         subplot(224)
-%         %         figure, imshow(log(abs(fftshift(ft_image2)) + 1),[])
-%         %         hold off
-%         
-%         %         saveas(fig1, './images/figure1.png')
-%         
-%         %         size(image1)
-%         
-%         %         ft_pad_image1 = fft2(image1, 1024,1024);
-%         
-%         %         tft_pad_image1 = log(abs(fftshift(ft_pad_image1)) + 1);
-%         
-%         %         imwrite(tft_pad_image1, '../report/images/ft_pad_image1.png', 'png');
-%         
-%         %         ft_pad_image2 = fft2(image2, 1024, 1024);
-%         
-%         %         tft_pad_image2 = log(abs(fftshift(ft_pad_image2)) + 1);
-%         
-%         %         imwrite(tft_pad_image2, '../report/images/ft_pad_image2.png', 'png');
-%         
-%         %         figure,
-%         %         hold on
-%         %         subplot(221)
-%         %         figure, imshow(image1)
-%         %         subplot(222)
-%         %         figure, imshow(log(abs(fftshift(ft_pad_image1)) + 1),[])
-%         %         subplot(223)
-%         %         figure, imshow(image2)
-%         %         subplot(224)
-%         %         figure, imshow(log(abs(fftshift(ft_pad_image2)) + 1),[])
-%         %         hold off
-        
-    end
-
-        function [filter_value] = h(x,y, D0)
-        
-            filter_value = (sin(2*pi*D0*sqrt(x^2 + y^2)))/(pi * sqrt(x^2 + y^2));
+    
+        function [filter] = butterworth_lowpass(x,y, D0, n)
+           
+            filter = zeros(x,y);
             
+            for i=1:x
+                for j=1:y
+%                   if ((i-(x/2))^2 + (j-(y/2))^2)^(1/2) > D0
+                        filter(i,j) = 1/(1 + (((i-(x/2))^2 + (j-(y/2))^2)^(1/2)/D0)^(2*n));
+%                     else
+%                         filter(i,j) = 0;
+%                   end
+                end
+            end
         end
 
-    function exercise32()
-        A = 1;
-        B = 1;
-        x = -3:1:3; % [-3 -2 -1 0 1 2 3];
-        f = [0 0 A A 0 0 0];
-        g = [0 0 0 B 0 0 0];
-        [fx fy] = stairs(x, f);
-        [gx gy] = stairs(x, g)
-        figure(1);
-        plot(fx, fy, 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        axis([-3, 3, 0, 1.5]);
-        figure(2);
-        plot(gx, gy, 'LineWidth', 2, 'Color', 'r');
-        axis([-3, 3, 0, 1.5]);
+        function [filter] = butterworth_highpass(x,y, D0, n)
+           
+            filter = zeros(x,y);
+            
+            for i=1:x
+                for j=1:y
+%                   if ((i-(x/2))^2 + (j-(y/2))^2)^(1/2) > D0
+                        filter(i,j) = 1 - (1/(1 + (((i-(x/2))^2 + (j-(y/2))^2)^(1/2)/D0)^(2*n)));
+%                     else
+%                         filter(i,j) = 0;
+%                   end
+                end
+            end
+        end
+    
+    
+        function [filter] = hfe(x,y,alpha,beta, D0) 
         
-        figure(3);
-        plot([-3,-2, -1, 0, 1, 2,3,4], [0,0, 0, 1, 1, 0,0,0], ...
-            'LineWidth', 2, 'Color', 'g')
-        axis([-3, 3, 0, 1.5]);
-        
-        
-    end
+            filter = zeros(x,y)
+            
+            for i=1:x
+                for j=1:y
+                    filter(i,j) = alpha + beta/(1 + (((i-(x/2))^2 + (j-(y/2))^2)^(1/2)/D0)^2);
+                end
+            end
+        end
 
-    function exercise33()
-        A = 1;
-        B = 1;
-        x = -3:1:3; % [-3 -2 -1 0 1 2 3];
-        %         f = [0 0 A A 0 0 0];
-        %         g = [0 0 0 B 0 0 0];
-        %           [fx fy] = stairs(x, f);
-        %           [gx gy] = stairs(x, g)
-        h = [1/3, 1/3, 1/3];
+    function exercise33(I)
+   
+        si = size(I);
         
-        h_1 = Conv(h, h);
-        h_2 = Conv(h, h_1);
-        h_3 = Conv(h, h_2);
+%         figure(1), imshow(I)
+        
+        ftI = fftshift(fft2(I));
+        
+%         figure(2), imshow(ftI)
+        
+%         figure(3), imshow(log(abs(ifftshift(ftI)) + 1));        
+        
+        figure(4), imshow(log(abs(ifftshift(ftI)) + 1), []);        
+
+        design_filter = zeros(si(1), si(2));
         
         
+        design_filter(180:200, 30:60) = ones(21,31);
         
-        figure(1);
-        %plot(fx, fy, 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        %axis([-3, 3, 0, 1.5]);
-        hold on
-        plot([-1 -1], [0, 1/3], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        plot([0 0], [0, 1/3], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        plot([1 1], [0, 1/3], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        axis([-1.5, 1.5, 0, 0.5]);
-        hold off
-        figure(2);
-        hold on
-        plot([-2 -2], [0, 1/9], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        plot([-1 -1], [0, 2/9], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        plot([0 0], [0, 3/9], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        plot([1 1], [0, 2/9], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        plot([2 2], [0, 1/9], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        axis([-2.5, 2.5, 0, 0.5]);
-        hold off
-        
-        figure(3);
-        hold on
-        plot([-3 -3], [0, 1/27], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        plot([-2 -2], [0, 3/27], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        plot([-1 -1], [0, 6/27], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        plot([0 0], [0, 7/27], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        plot([1 1], [0, 6/27], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        plot([2 2], [0, 3/27], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        plot([3 3], [0, 1/27], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        axis([-3.5, 3.5, 0, 0.5]);
-        hold off
-        
-        figure(4);
-        hold on
-        plot([-4 -4], [0, 1/81], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        plot([-3 -3], [0, 4/81], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        plot([-2 -2], [0, 10/81], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        plot([-1 -1], [0, 16/81], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        plot([0 0], [0, 19/81], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        plot([1 1], [0, 16/81], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        plot([2 2], [0, 10/81], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        plot([3 3], [0, 4/81], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        plot([4 4], [0, 1/81], '-o', 'LineWidth', 2, 'MarkerEdgeColor', 'b');
-        axis([-4.5, 4.5, 0, 0.5]);
-        hold off
+        design_filter(60:80, 200:230) = ones(21,31);
         
         
         
-        %           plot(gx, gy, 'LineWidth', 2, 'Color', 'r');
-        %           axis([-3, 3, 0, 1.5]);
+        figure(9), imshow(design_filter)
         
-        %           figure(3);
-        %           plot([-3,-2, -1, 0, 1, 2,3,4], [0,0, 0, 1, 1, 0,0,0], ...
-        %               'LineWidth', 2, 'Color', 'g')
-        %           axis([-3, 3, 0, 1.5]);
+        bwlf = butterworth_lowpass(si(1), si(2), 25, 2);
+        
+        nft3 = bwlf.*ftI;
+
+%         figure(4), imshow(log(abs(nft3) + 1), []);
+        
+%         figure(7), imshow(bwlf);
+        
+%         figure(8), imshow(ifft2(ifftshift(nft3)),[]);        
         
         
     end
-%      endimshow (RGB);
-% hold on
-%   plot ([tur(2), tll(2), tll(2), tur(2), tur(2)], ...
-%         [tur(1), tur(1), tll(1), tll(1), tur(1)], ...
-%         'k-','linewidth', 2,'Color', 'green');
-% %   text (tll(2), tur(1)-15, 'Training');
-%
-% hold off
 
     function run( ~ )
+
+        image_q31a = imread('./images/square.tiff');
+        image_q31b = imread('./images/unix.tiff');
         
-        exercise31()
+%         exercise31(image_q31a)
         
-        exercise32()
-        
-        exercise33()        
+        image_q33a = imread('./images/noisy.tiff');
+
+        exercise33(image_q33a)
+            
 
     end
 
@@ -201,4 +162,3 @@ run()
 
 
 end
-
