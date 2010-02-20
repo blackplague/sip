@@ -2,105 +2,100 @@ function [ output_args ] = mandatory_exercise3( input_args )
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
-    function exercise31(I, n)
+    function G = exercise31(I, d0, band, method, name)
+       
+        % Create filter
+        if strcmp(method, 'ideal')
+            h = ideal(I, d0);
+        elseif strcmp(method, 'butter')
+            n = 2;
+            h = butterworth(I, d0, n);
+        elseif strcmp(method, 'emphasis')
+            alpha = 1;
+            beta = 15;
+            h = hfe(I, d0, alpha, beta);
+        else
+            % Fail is fail
+            error('No such method');
+        end
         
-        figure(1), imshow(I)
+        if strcmp(band, 'low')
+            % Do nothing
+        elseif strcmp(band, 'high')
+            h = (1 - h);
+        else
+            % Fail
+            error('Select valid band')
+        end
         
-        si = size(I);
-
-        ftI = fftshift(fft2(I));
+        % Inspect the filter
+        %figure, imshow(h, []);
         
-        alpha = 0.4;
-        beta = 2;
+        % Save the filter to disk
+        imwrite(h, ['../report/images/' name '_' method '_' band '_filter_' num2str(d0) '.png'], 'png');
         
-        cut_off = 30;
+        % Transform image
+        F = fft2(I);
+        F = fftshift(F);
+        ftshow(F);
         
-        %         lowpass_filter = ideal_lowpass(si(1), si(2), cut_off);
+        % Pointwise multiplication with the filter        
+        G = h.*F;
         
-%         nftI = lowpass_filter.*ftI;
-  
-%         figure(2), imshow(lowpass_filter)
+        % Inspect result (Fourier)
+        ftshow(G);
         
-%         figure(3), imshow(log(abs(ifftshift(nftI)) + 1));
-        
-%         figure(4), imshow(ifft2(ifftshift(nftI)),[]);
-
-%         bw_filter = butterworth(si(1), si(2), cut_off, 2);
-        
-%         nftI2 = bw_filter.*ftI;
-        
-%         figure(5), imshow(bw_filter)
-%         figure(6), imshow(ifft2(ifftshift(nftI2)), [])
-        
-        hfe_filter = hfe(si(1), si(2), alpha, beta, cut_off)
-        
-        nftI3 = hfe_filter.*ftI;
-
-        figure(7), imshow(hfe_filter);
-        
-        figure(8), imshow(ifft2(ifftshift(nftI3)),[]);        
-        
-%         imwrite(tft_image2, '../report/images/ft_image2.png', 'png');
-        
-         figure(2), imshow(lowpass_filter)
-         figure(4), imshow(ifft2(ifftshift(nftI)),[]);
-
-
+        % Reverse transform to spatial
+        G = abs(ifft2(fftshift(G)));
     end
 
-        function [filter] = ideal_lowpass(x,y, D0)
+    function ftshow(F)
+       figure, imshow(log(abs(F)), []);
+    end
+
+        function [ filter ] = ideal(I, D0)
+            [x y] = size(I);
             
             filter = zeros(x,y);
             
-            for i=1:x
-                for j = 1:y
-                    if ((i-(x/2))^2 + (j-(y/2))^2)^(1/2) < D0
-                        filter(i,j) = 1;
+            for u=1:x
+                for v=1:y
+                    D = ((u-(x/2))^2 + (v-(y/2))^2)^(1/2); 
+                    if D < D0
+                        filter(u,v) = 1;
                     else
-                        filter(i,j) = 0;
+                        filter(u,v) = 0;
                     end
                 end
             end
         end
-    
-        function [filter] = butterworth_lowpass(x,y, D0, n)
-           
-            filter = zeros(x,y);
-            
-            for i=1:x
-                for j=1:y
-%                   if ((i-(x/2))^2 + (j-(y/2))^2)^(1/2) > D0
-                        filter(i,j) = 1/(1 + (((i-(x/2))^2 + (j-(y/2))^2)^(1/2)/D0)^(2*n));
-%                     else
-%                         filter(i,j) = 0;
-%                   end
-                end
-            end
-        end
-
-        function [filter] = butterworth_highpass(x,y, D0, n)
-           
-            filter = zeros(x,y);
-            
-            for i=1:x
-                for j=1:y
-%                   if ((i-(x/2))^2 + (j-(y/2))^2)^(1/2) > D0
-                        filter(i,j) = 1 - (1/(1 + (((i-(x/2))^2 + (j-(y/2))^2)^(1/2)/D0)^(2*n)));
-%                     else
-%                         filter(i,j) = 0;
-%                   end
-                end
-            end
-        end
-    
-    
-        function [filter] = hfe(x,y,alpha,beta, D0) 
         
-            filter = zeros(x,y)
+        function [ filter ] = butterworth(I, D0, n)
+            [x y] = size(I);
             
-            for i=1:x
-                for j=1:y
-                    filter(i,j) = alpha + beta/(1 + (((i-(x/2))^2 + (j-(y/2))^2)^(1/2)/D0)^2);
+            filter = zeros(x,y);
+            
+            for u=1:x
+                for v=1:y
+                        D = ((u-(x/2))^2 + (v-(y/2))^2)^(1/2);
+                        filter(u,v) = 1/(1 + (D/D0)^(2*n));
+                end
+            end
+        end
+    
+        function [ filter ] = hfe(I, alpha, beta, D0) 
+            [x y] = size(I);
+            
+            filter = zeros(x,y);
+            
+            for u=1:x
+                for v=1:y
+                    D = ((u-(x/2))^2 + (v-(y/2))^2)^(1/2);
+                    if D > 0
+                        filter(u,v) = alpha + beta/(1 + (D/D0)^2);
+                    elseif D == 0
+                        filter(u,v) = 1;
+                    end
                 end
             end
         end
@@ -109,56 +104,71 @@ function [ output_args ] = mandatory_exercise3( input_args )
    
         si = size(I);
         
-%         figure(1), imshow(I)
+        figure(1), imshow(I)
         
         ftI = fftshift(fft2(I));
         
-%         figure(2), imshow(ftI)
-        
-%         figure(3), imshow(log(abs(ifftshift(ftI)) + 1));        
-        
-        figure(4), imshow(log(abs(ifftshift(ftI)) + 1), []);        
+        figure(2), imshow(log(abs(ifftshift(ftI)) + 1), []);        
 
-        design_filter = zeros(si(1), si(2));
+%         design_filter = ones(si(1), si(2));
+%         design_filter(180:200, 70:100) = zeros(21,31);
+%         design_filter(60:80, 150:180) = zeros(21,31);
+
+%         figure(3), imshow(design_filter)
         
-        
-        design_filter(180:200, 30:60) = ones(21,31);
-        
-        design_filter(60:80, 200:230) = ones(21,31);
-        
-        
-        
-        figure(9), imshow(design_filter)
-        
-        bwlf = butterworth_lowpass(si(1), si(2), 25, 2);
-        
+         bwlf = butterworth_lowpass(si(1), si(2), 35, 2);
+
         nft3 = bwlf.*ftI;
+         
+%         nft3 = design_filter.*ftI;
+        figure(4), imshow(bwlf)
+%         figure(5), imshow(nft3, []);
+        figure(6), imshow(log(abs(nft3) + 1), []);
+        figure(7), imshow(ifft2(ifftshift(nft3)),[]);        
+        
+%         design_filter2 = ones(si(1), si(2));
+%         design_filter2(1:50, 1:40) = zeros(50,40);
+        
+%         figure(8), imshow(design_filter2)
 
-%         figure(4), imshow(log(abs(nft3) + 1), []);
-        
-%         figure(7), imshow(bwlf);
-        
-%         figure(8), imshow(ifft2(ifftshift(nft3)),[]);        
-        
+%         nft4 = design_filter2.*ftI;
+
+%         figure(9), imshow(log(abs(ifftshift(nft4)) + 1), []);        
         
     end
 
     function run( ~ )
-
-        image_q31a = imread('./images/square.tiff');
-        image_q31b = imread('./images/unix.tiff');
+        %g1 = imread('../../../../images/lenna.tiff');
+        %g1 = imread('../../../../images/noisy.tiff');
+        %g1 = imread('../../../../images/berlinger.tiff');
+%         g1 = imread('./images/square.tiff');
+        g1 = imread('./images/unix.tiff');
+        %imwrite(g1, '../report/images/unix.png', 'png');
+        imwrite(g1, '../report/images/unix.png', 'png');
+        imshow(g1, []);
         
-%         exercise31(image_q31a)
+        %Repair(g1);
         
-        image_q33a = imread('./images/noisy.tiff');
-
-        exercise33(image_q33a)
-            
+        %FindCosts(1024);
+        
+        %MinFilterSize();
+        
+        name = 'unix';
+        
+        filter = 'butter';
+        frequency = 'low';
+        cut_off = 40;
+        
+        G1 = exercise31(g1, cut_off, frequency, filter, name);
+        %G2 = FilterImage(g1, 45, 'high', 'ideal');
+        imwrite(G1, gray, ['../report/images/' name '_' filter '_' frequency '_result_' num2str(cut_off) '.png'], 'png');
+        %imwrite(G1, [gray], '../report/images/unix_butter_result_45.png', 'png');
+        %imwrite(G2, [gray], '../report/images/unix_high_result_45.png', 'png');
+        figure, imshow(G1, []);
+        %figure, imshow(G2, []);
 
     end
 
 run()
-
-
 
 end
